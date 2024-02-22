@@ -7,6 +7,7 @@ enum TrasactionType {
     Debit,
     Credit
 };
+
 std::string timeToString(time_t time) {
     char buffer[20]; // Tamanho suficiente para a data no formato ISO 8601
     std::strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ", std::gmtime(&time)); // Formata o tempo como uma string ISO 8601

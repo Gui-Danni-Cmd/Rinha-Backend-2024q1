@@ -10,6 +10,7 @@
 #include <sstream>
 #include <ctime>
 #include <iomanip>
+#include <thread>
 #include <unordered_map> 
 
 
@@ -21,6 +22,7 @@ class ApiController : public drogon::HttpController<ApiController> {
         METHOD_LIST_BEGIN   
         ADD_METHOD_TO(ApiController::postTrasaction, "/clientes/{id}/trasaction", drogon::Post);
         ADD_METHOD_TO(ApiController::account, "/cliente/{id}/extrato", drogon::Get);
+        //ADD_METHOD_TO(ApiController::concurrent, "/cliente/{id}/concorrencia", drogon::Get);
         METHOD_LIST_END
         std::unordered_map < int8_t, Account > _Account;
         //void asyncHandleHttpRequest(const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback);
@@ -33,6 +35,7 @@ class ApiController : public drogon::HttpController<ApiController> {
             
         }
         Json::Value createJson( int8_t userId );
+        //void concurrent( const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback, int userId );
         void postTrasaction( const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback, int userId );
         void account( const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback, int userId );
 };
@@ -46,6 +49,9 @@ id	limite	                saldo inicial
 5	500000	                0
 */
 
+
+
+//void concurrent( const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback, int userId );
 Json::Value ApiController::createJson( int8_t userId ) {
     Json::Value jsonData;
     Json::Reader jsonReader;
@@ -96,12 +102,14 @@ void ApiController::postTrasaction( const drogon::HttpRequestPtr &req, std::func
 }
 
 void ApiController::account( const drogon::HttpRequestPtr &req, std::function<void(const drogon::HttpResponsePtr &)> &&callback, int userId ) {
+    drogon::app().getLoop()->runInLoop([=]() {
     Json::Value json = createJson(userId);
+    
     auto resp = drogon::HttpResponse::newHttpJsonResponse(json);
     time_t now = time(0);
     tm *ltm = localtime(&now);
     auto it = _Account.find(userId);
-    std::cout << " " << userId << " " << ltm->tm_min << '\n';
+    //std::cout << " " << userId << " " << ltm->tm_min << '\n';
     if ( it != _Account.end()) {
         resp->setStatusCode(drogon::HttpStatusCode::k200OK);
         resp->setContentTypeCode(drogon::ContentType::CT_APPLICATION_JSON);
@@ -112,5 +120,6 @@ void ApiController::account( const drogon::HttpRequestPtr &req, std::function<vo
         resp->setBody("Valor nao encontrado!\n");
     }
     callback(resp);
+    });
 }
 
