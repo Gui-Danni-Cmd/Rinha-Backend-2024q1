@@ -14,9 +14,9 @@ class Account {
             this->balance = 0;
             this->limit = 0;
         }
-        Account( int64_t balance ) {
-            this->balance = balance;
-            this->limit = 0;
+        Account( int64_t limit ) {
+            this->balance = 0;
+            this->limit = limit;
         }
         Account( int64_t balance, int64_t limit ) {
             this->balance = balance;
@@ -48,6 +48,7 @@ void Account::AddTrasaction( Trasaction trasaction ) {
 
 void Account::CreateTrasaction( int64_t value, TrasactionType type, std::string descrition ) {
     Trasaction trasaction = Trasaction(value, type, descrition ); 
+    this->balance += value;
     this->trasaction->push_back(trasaction);
 }
 
